@@ -15,11 +15,12 @@ const SynchronizeLyricsWithAudioInputSchema = z.object({
   lyricsData: z
     .array(
       z.object({
-        time: z.number(),
+        startTime: z.number(),
+        endTime: z.number(),
         text: z.string(),
       })
     )
-    .describe('An array of lyric objects with time and text properties.'),
+    .describe('An array of lyric objects with startTime, endTime, and text properties.'),
   currentLineIndex: z
     .number()
     .optional()
@@ -51,12 +52,26 @@ const synchronizeLyricsWithAudioFlow = ai.defineFlow(
   async input => {
     let currentLineIndex = -1;
     for (let i = 0; i < input.lyricsData.length; i++) {
-      if (input.lyricsData[i].time <= input.currentTime) {
+      if (
+        input.currentTime >= input.lyricsData[i].startTime &&
+        input.currentTime <= input.lyricsData[i].endTime
+      ) {
         currentLineIndex = i;
-      } else {
         break;
       }
     }
+    
+    // If no line is active, keep the last active line until the next one starts.
+    if (currentLineIndex === -1) {
+        for (let i = 0; i < input.lyricsData.length; i++) {
+            if (input.currentTime >= input.lyricsData[i].endTime) {
+                currentLineIndex = i;
+            } else {
+                break;
+            }
+        }
+    }
+
 
     return {currentLineIndex};
   }

@@ -8,14 +8,14 @@ import { cn } from '@/lib/utils';
 import { synchronizeLyricsWithAudio } from '@/ai/flows/synchronize-lyrics-with-audio';
 
 const lyricsData = [
-  { time: 2.0, text: "temanku semua pada jahat tante" },
-  { time: 5.0, text: "aku lagi susah mereka gak ada" },
-  { time: 8.5, text: "coba kalo lagi jaya" },
-  { time: 11.0, text: "aku dipuja pujanya tante" },
-  { time: 14.5, text: "sudah terbiasa terjadi tante" },
-  { time: 17.5, text: "teman datang ketika lagi butuh saja" },
-  { time: 21.0, text: "coba kalo lagi susah" },
-  { time: 24.0, text: "mereka semua menghilang" },
+  { startTime: 1.9, endTime: 4.7, text: "temanku semua pada jahat tante" },
+  { startTime: 4.7, endTime: 7.9, text: "aku lagi susah mereka gak ada" },
+  { startTime: 7.9, endTime: 10.4, text: "coba kalau lagi jayaaa" },
+  { startTime: 10.4, endTime: 13.7, text: "aku dipuja-pujanya tante" },
+  { startTime: 14.2, endTime: 17.2, text: "sudah terbiasa terjadi tante" },
+  { startTime: 17.2, endTime: 20.6, text: "teman datang ketika lagi butuh saja" },
+  { startTime: 20.6, endTime: 23.0, text: "coba kalau lagi susaaah" },
+  { startTime: 23.0, endTime: 26.2, text: "mereka semua menghilanggg" },
 ];
 
 export default function LyricSyncPage() {

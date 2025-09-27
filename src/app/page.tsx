@@ -152,6 +152,8 @@ export default function LyricSyncPage() {
     return null;
   }
 
+  const currentLine = currentLineIndex !== -1 ? lyricsData[currentLineIndex] : null;
+
   return (
     <main className="flex min-h-screen w-full flex-col items-center justify-center bg-background p-4 sm:p-6 md:p-8">
       <Card className="w-full max-w-2xl overflow-hidden border-primary/20 bg-card/80 shadow-2xl shadow-primary/10 backdrop-blur-sm">
@@ -161,28 +163,20 @@ export default function LyricSyncPage() {
         </CardHeader>
         <CardContent>
           <div className="relative flex h-80 flex-col items-center justify-center space-y-2 overflow-hidden rounded-md p-4 text-center">
-            {lyricsData.map((line, index) => {
-              const isActive = index === currentLineIndex;
-              return (
-                <div key={index} className={cn(
-                  "relative text-2xl font-bold transition-all duration-300",
-                  isActive ? "text-primary scale-110" : "text-muted-foreground/50"
-                )}>
-                  <p aria-hidden="true">{line.text}</p>
-                  
-                  {isActive && (
-                    <div
-                      className="absolute left-0 top-0 h-full overflow-hidden whitespace-nowrap"
-                      style={{ width: highlightedWidth }}
-                    >
-                      <p className="text-primary-foreground bg-primary">{line.text}</p>
-                    </div>
-                  )}
+            {currentLine ? (
+              <div className="relative text-2xl font-bold text-primary transition-all duration-300 scale-110">
+                <p aria-hidden="true" className="text-muted-foreground/50">{currentLine.text}</p>
+                <div
+                  className="absolute left-0 top-0 h-full overflow-hidden whitespace-nowrap"
+                  style={{ width: highlightedWidth }}
+                >
+                  <p className="text-primary-foreground bg-primary">{currentLine.text}</p>
                 </div>
-              );
-            })}
-            {currentLineIndex === -1 && !isPlaying && (
-              <p className="absolute text-center text-2xl font-bold text-muted-foreground">Tekan Play untuk memulai</p>
+              </div>
+            ) : (
+              <p className="absolute text-center text-2xl font-bold text-muted-foreground">
+                {isPlaying ? '...' : 'Tekan Play untuk memulai'}
+              </p>
             )}
           </div>
           <audio ref={audioRef} src="/audio.mp3" preload="metadata" className="hidden" />

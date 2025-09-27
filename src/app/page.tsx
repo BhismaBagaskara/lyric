@@ -34,7 +34,9 @@ export default function LyricSyncPage() {
     if (audioRef.current) {
       if (isPlaying) {
         audioRef.current.pause();
-        cancelAnimationFrame(animationFrameRef.current!);
+        if (animationFrameRef.current) {
+            cancelAnimationFrame(animationFrameRef.current);
+        }
       } else {
         audioRef.current.play();
         animationFrameRef.current = requestAnimationFrame(animateKaraoke);
@@ -62,61 +64,52 @@ export default function LyricSyncPage() {
     }
   };
 
-  const animateKaraoke = useCallback(() => {
-    if (!audioRef.current || !isPlaying) return;
-
+  const animateKaraoke = useCallback(async () => {
+    if (!audioRef.current) return;
+  
     const currentTime = audioRef.current.currentTime;
     
-    // Find the current line
-    let activeLineIndex = -1;
-    for (let i = 0; i < lyricsData.length; i++) {
-      if (currentTime >= lyricsData[i].startTime && currentTime <= lyricsData[i].endTime) {
-        activeLineIndex = i;
-        break;
-      }
-    }
-    
-    // If no line is active, find the last played line
-    if (activeLineIndex === -1) {
-      for (let i = lyricsData.length - 1; i >= 0; i--) {
-        if (currentTime > lyricsData[i].endTime) {
-          activeLineIndex = i;
-          break;
+    try {
+      const result = await synchronizeLyricsWithAudio({
+        currentTime,
+        lyricsData,
+      });
+      
+      const activeLineIndex = result.currentLineIndex;
+
+      if (activeLineIndex !== -1) {
+        if (activeLineIndex !== currentLineIndex) {
+          setCurrentLineIndex(activeLineIndex);
         }
-      }
-    }
+        
+        const currentLine = lyricsData[activeLineIndex];
+        const timeIntoLine = currentTime - currentLine.startTime;
+        const lineDuration = currentLine.endTime - currentLine.startTime;
+        const progress = Math.max(0, Math.min(1, timeIntoLine / lineDuration));
+        setHighlightedWidth(`${progress * 100}%`);
 
-    if (activeLineIndex !== currentLineIndex) {
-      setCurrentLineIndex(activeLineIndex);
-    }
-    
-    if (activeLineIndex !== -1) {
-      const currentLine = lyricsData[activeLineIndex];
-      const timeIntoLine = currentTime - currentLine.startTime;
-      const lineDuration = currentLine.endTime - currentLine.startTime;
-      const progress = Math.max(0, Math.min(1, timeIntoLine / lineDuration));
-      setHighlightedWidth(`${progress * 100}%`);
-    } else {
-      // Before the first lyric or after the last
-      const isBeforeFirst = currentTime < lyricsData[0]?.startTime;
-      if (isBeforeFirst) {
-        setHighlightedWidth('0%');
-        setCurrentLineIndex(-1);
       } else {
-        // After last line, keep it fully highlighted
-        setCurrentLineIndex(lyricsData.length - 1);
-        setHighlightedWidth('100%');
+         const isBeforeFirst = currentTime < (lyricsData[0]?.startTime || 0);
+         if (isBeforeFirst) {
+           setCurrentLineIndex(-1);
+           setHighlightedWidth('0%');
+         }
       }
-    }
 
-    animationFrameRef.current = requestAnimationFrame(animateKaraoke);
+    } catch (error) {
+      console.error("Error synchronizing lyrics:", error);
+    }
+  
+    if (isPlaying) {
+      animationFrameRef.current = requestAnimationFrame(animateKaraoke);
+    }
   }, [isPlaying, currentLineIndex]);
 
 
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
-
+  
     const onPlay = () => {
       setIsPlaying(true);
       animationFrameRef.current = requestAnimationFrame(animateKaraoke);
@@ -135,11 +128,16 @@ export default function LyricSyncPage() {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-
+  
     audio.addEventListener('play', onPlay);
     audio.addEventListener('pause', onPause);
     audio.addEventListener('ended', onEnded);
-
+  
+    // Start animation loop if playing
+    if (isPlaying) {
+        animationFrameRef.current = requestAnimationFrame(animateKaraoke);
+    }
+  
     return () => {
       audio.removeEventListener('play', onPlay);
       audio.removeEventListener('pause', onPause);
@@ -148,10 +146,10 @@ export default function LyricSyncPage() {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [isClient, animateKaraoke]);
+  }, [isClient, animateKaraoke, isPlaying]);
 
   if (!isClient) {
-    return null; // Render nothing on the server
+    return null;
   }
 
   return (
@@ -170,10 +168,8 @@ export default function LyricSyncPage() {
                   "relative text-2xl font-bold transition-all duration-300",
                   isActive ? "text-primary scale-110" : "text-muted-foreground/50"
                 )}>
-                  {/* Background text */}
                   <p aria-hidden="true">{line.text}</p>
                   
-                  {/* Highlighted text overlay */}
                   {isActive && (
                     <div
                       className="absolute left-0 top-0 h-full overflow-hidden whitespace-nowrap"

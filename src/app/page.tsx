@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import { synchronizeLyricsWithAudio } from '@/ai/flows/synchronize-lyrics-with-audio';
 
 const lyricsData = [
-  { time: 1.5, text: "temanku semua pada jahat tante" },
+  { time: 0.5, text: "temanku semua pada jahat tante" },
   { time: 4.0, text: "aku lagi susah mereka gak ada" },
   { time: 7.5, text: "coba kalo lagi jaya" },
   { time: 10.0, text: "aku dipuja pujanya tante" },

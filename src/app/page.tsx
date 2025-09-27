@@ -22,7 +22,9 @@ export default function LyricSyncPage() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentLineIndex, setCurrentLineIndex] = useState(-1);
+  const [highlightedWidth, setHighlightedWidth] = useState('0%');
   const [isClient, setIsClient] = useState(false);
+  const animationFrameRef = useRef<number>();
 
   useEffect(() => {
     setIsClient(true);
@@ -32,8 +34,10 @@ export default function LyricSyncPage() {
     if (audioRef.current) {
       if (isPlaying) {
         audioRef.current.pause();
+        cancelAnimationFrame(animationFrameRef.current!);
       } else {
         audioRef.current.play();
+        animationFrameRef.current = requestAnimationFrame(animateKaraoke);
       }
       setIsPlaying(!isPlaying);
     }
@@ -51,64 +55,104 @@ export default function LyricSyncPage() {
       audioRef.current.currentTime = 0;
       setIsPlaying(false);
       setCurrentLineIndex(-1);
+      setHighlightedWidth('0%');
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
     }
   };
 
-  const handleTimeUpdate = useCallback(async () => {
-    if (!audioRef.current) return;
+  const animateKaraoke = useCallback(() => {
+    if (!audioRef.current || !isPlaying) return;
+
     const currentTime = audioRef.current.currentTime;
-    try {
-      const result = await synchronizeLyricsWithAudio({
-        currentTime,
-        lyricsData,
-      });
-      if (result.currentLineIndex !== currentLineIndex) {
-        setCurrentLineIndex(result.currentLineIndex);
+    
+    // Find the current line
+    let activeLineIndex = -1;
+    for (let i = 0; i < lyricsData.length; i++) {
+      if (currentTime >= lyricsData[i].startTime && currentTime <= lyricsData[i].endTime) {
+        activeLineIndex = i;
+        break;
       }
-    } catch (error) {
-      console.error("Error synchronizing lyrics:", error);
     }
-  }, [currentLineIndex]);
+    
+    // If no line is active, find the last played line
+    if (activeLineIndex === -1) {
+      for (let i = lyricsData.length - 1; i >= 0; i--) {
+        if (currentTime > lyricsData[i].endTime) {
+          activeLineIndex = i;
+          break;
+        }
+      }
+    }
+
+    if (activeLineIndex !== currentLineIndex) {
+      setCurrentLineIndex(activeLineIndex);
+    }
+    
+    if (activeLineIndex !== -1) {
+      const currentLine = lyricsData[activeLineIndex];
+      const timeIntoLine = currentTime - currentLine.startTime;
+      const lineDuration = currentLine.endTime - currentLine.startTime;
+      const progress = Math.max(0, Math.min(1, timeIntoLine / lineDuration));
+      setHighlightedWidth(`${progress * 100}%`);
+    } else {
+      // Before the first lyric or after the last
+      const isBeforeFirst = currentTime < lyricsData[0]?.startTime;
+      if (isBeforeFirst) {
+        setHighlightedWidth('0%');
+        setCurrentLineIndex(-1);
+      } else {
+        // After last line, keep it fully highlighted
+        setCurrentLineIndex(lyricsData.length - 1);
+        setHighlightedWidth('100%');
+      }
+    }
+
+    animationFrameRef.current = requestAnimationFrame(animateKaraoke);
+  }, [isPlaying, currentLineIndex]);
+
 
   useEffect(() => {
     const audio = audioRef.current;
-    if (audio) {
-      const onTimeUpdate = () => handleTimeUpdate();
-      const onPlay = () => setIsPlaying(true);
-      const onPause = () => setIsPlaying(false);
-      const onEnded = () => {
-        setIsPlaying(false);
-        setCurrentLineIndex(-1);
-      };
-      
-      audio.addEventListener('timeupdate', onTimeUpdate);
-      audio.addEventListener('play', onPlay);
-      audio.addEventListener('pause', onPause);
-      audio.addEventListener('ended', onEnded);
-      
-      return () => {
-        audio.removeEventListener('timeupdate', onTimeUpdate);
-        audio.removeEventListener('play', onPlay);
-        audio.removeEventListener('pause', onPause);
-        audio.removeEventListener('ended', onEnded);
-      };
-    }
-  }, [handleTimeUpdate, isClient]);
+    if (!audio) return;
+
+    const onPlay = () => {
+      setIsPlaying(true);
+      animationFrameRef.current = requestAnimationFrame(animateKaraoke);
+    };
+    const onPause = () => {
+      setIsPlaying(false);
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+    const onEnded = () => {
+      setIsPlaying(false);
+      setCurrentLineIndex(lyricsData.length - 1);
+      setHighlightedWidth('100%');
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+
+    audio.addEventListener('play', onPlay);
+    audio.addEventListener('pause', onPause);
+    audio.addEventListener('ended', onEnded);
+
+    return () => {
+      audio.removeEventListener('play', onPlay);
+      audio.removeEventListener('pause', onPause);
+      audio.removeEventListener('ended', onEnded);
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, [isClient, animateKaraoke]);
 
   if (!isClient) {
-    return null; // Render nothing on the server to avoid hydration mismatch
+    return null; // Render nothing on the server
   }
-
-  const getLyricLine = (index: number) => {
-    if (index < 0 || index >= lyricsData.length) {
-      return null;
-    }
-    return lyricsData[index];
-  }
-
-  const previousLine = getLyricLine(currentLineIndex - 1);
-  const currentLine = getLyricLine(currentLineIndex);
-  const nextLine = getLyricLine(currentLineIndex + 1);
 
   return (
     <main className="flex min-h-screen w-full flex-col items-center justify-center bg-background p-4 sm:p-6 md:p-8">
@@ -118,22 +162,32 @@ export default function LyricSyncPage() {
           <p className="text-accent">In Engineer We Trust</p>
         </CardHeader>
         <CardContent>
-          <div className="relative flex h-80 flex-col items-center justify-center space-y-4 overflow-hidden rounded-md p-4">
-              {currentLineIndex === -1 && !isPlaying ? (
-                <p className="text-center text-2xl font-bold text-muted-foreground">Tekan Play untuk memulai</p>
-              ) : (
-                <>
-                  <p className="text-center text-lg font-medium text-muted-foreground/50 transition-all duration-300">
-                    {previousLine?.text}
-                  </p>
-                  <p className="text-center text-2xl font-bold text-primary transition-all duration-300">
-                    {currentLine?.text}
-                  </p>
-                  <p className="text-center text-lg font-medium text-muted-foreground/50 transition-all duration-300">
-                    {nextLine?.text}
-                  </p>
-                </>
-              )}
+          <div className="relative flex h-80 flex-col items-center justify-center space-y-2 overflow-hidden rounded-md p-4 text-center">
+            {lyricsData.map((line, index) => {
+              const isActive = index === currentLineIndex;
+              return (
+                <div key={index} className={cn(
+                  "relative text-2xl font-bold transition-all duration-300",
+                  isActive ? "text-primary scale-110" : "text-muted-foreground/50"
+                )}>
+                  {/* Background text */}
+                  <p aria-hidden="true">{line.text}</p>
+                  
+                  {/* Highlighted text overlay */}
+                  {isActive && (
+                    <div
+                      className="absolute left-0 top-0 h-full overflow-hidden whitespace-nowrap"
+                      style={{ width: highlightedWidth }}
+                    >
+                      <p className="text-primary-foreground bg-primary">{line.text}</p>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+            {currentLineIndex === -1 && !isPlaying && (
+              <p className="absolute text-center text-2xl font-bold text-muted-foreground">Tekan Play untuk memulai</p>
+            )}
           </div>
           <audio ref={audioRef} src="/audio.mp3" preload="metadata" className="hidden" />
         </CardContent>

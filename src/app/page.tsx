@@ -8,14 +8,14 @@ import { cn } from '@/lib/utils';
 import { synchronizeLyricsWithAudio } from '@/ai/flows/synchronize-lyrics-with-audio';
 
 const lyricsData = [
-  { time: 0.5, text: "temanku semua pada jahat tante" },
-  { time: 4.0, text: "aku lagi susah mereka gak ada" },
-  { time: 7.5, text: "coba kalo lagi jaya" },
-  { time: 10.0, text: "aku dipuja pujanya tante" },
-  { time: 13.5, text: "sudah terbiasa terjadi tante" },
-  { time: 16.5, text: "teman datang ketika lagi butuh saja" },
-  { time: 20.0, text: "coba kalo lagi susah" },
-  { time: 23.0, text: "mereka semua menghilang" },
+  { time: 8.0, text: "temanku semua pada jahat tante" },
+  { time: 11.0, text: "aku lagi susah mereka gak ada" },
+  { time: 14.5, text: "coba kalo lagi jaya" },
+  { time: 17.0, text: "aku dipuja pujanya tante" },
+  { time: 20.5, text: "sudah terbiasa terjadi tante" },
+  { time: 23.5, text: "teman datang ketika lagi butuh saja" },
+  { time: 27.0, text: "coba kalo lagi susah" },
+  { time: 30.0, text: "mereka semua menghilang" },
 ];
 
 export default function LyricSyncPage() {

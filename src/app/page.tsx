@@ -117,8 +117,7 @@ export default function LyricSyncPage() {
                     'text-center text-xl font-medium transition-all duration-300 ease-in-out',
                     currentLineIndex === index
                       ? 'scale-110 text-2xl font-bold text-primary'
-                      : 'scale-100 text-muted-foreground opacity-70',
-                    index > currentLineIndex && 'hidden'
+                      : 'scale-100 text-muted-foreground opacity-70'
                   )}
                 >
                   {line.text}
@@ -126,7 +125,7 @@ export default function LyricSyncPage() {
               ))}
             </div>
           </div>
-          <audio ref={audioRef} src="/audio.mp3" preload="metadata" className="hidden" />
+          <audio ref={audioRef} src="https://storage.googleapis.com/studiopublic/TanteCulikAkuDong.mp3" preload="metadata" className="hidden" />
         </CardContent>
         <CardFooter className="flex flex-col items-center justify-center gap-4 border-t border-border/50 pt-6">
           <div className="flex items-center gap-4">

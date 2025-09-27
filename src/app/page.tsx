@@ -103,7 +103,7 @@ export default function LyricSyncPage() {
       <Card className="w-full max-w-2xl overflow-hidden border-primary/20 bg-card/80 shadow-2xl shadow-primary/10 backdrop-blur-sm">
         <CardHeader className="text-center">
           <h1 className="font-headline text-4xl font-bold text-primary sm:text-5xl">TanteCulikAkuDong!</h1>
-          <p className="text-accent">lagu viral di TikTok</p>
+          <p className="text-accent">In Engineer We Trust</p>
         </CardHeader>
         <CardContent>
           <div className="relative h-80 space-y-2 overflow-auto rounded-md p-4">

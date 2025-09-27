@@ -50,6 +50,7 @@ export default function LyricSyncPage() {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
       setIsPlaying(false);
+      setCurrentLineIndex(-1);
     }
   };
 
@@ -98,6 +99,17 @@ export default function LyricSyncPage() {
     return null; // Render nothing on the server to avoid hydration mismatch
   }
 
+  const getLyricLine = (index: number) => {
+    if (index < 0 || index >= lyricsData.length) {
+      return null;
+    }
+    return lyricsData[index];
+  }
+
+  const previousLine = getLyricLine(currentLineIndex - 1);
+  const currentLine = getLyricLine(currentLineIndex);
+  const nextLine = getLyricLine(currentLineIndex + 1);
+
   return (
     <main className="flex min-h-screen w-full flex-col items-center justify-center bg-background p-4 sm:p-6 md:p-8">
       <Card className="w-full max-w-2xl overflow-hidden border-primary/20 bg-card/80 shadow-2xl shadow-primary/10 backdrop-blur-sm">
@@ -106,24 +118,22 @@ export default function LyricSyncPage() {
           <p className="text-accent">In Engineer We Trust</p>
         </CardHeader>
         <CardContent>
-          <div className="relative h-80 space-y-2 overflow-auto rounded-md p-4">
-            <div
-              className="flex w-full flex-col items-center gap-6"
-            >
-              {lyricsData.map((line, index) => (
-                <p
-                  key={index}
-                  className={cn(
-                    'text-center text-xl font-medium transition-all duration-300 ease-in-out',
-                    currentLineIndex === index
-                      ? 'scale-110 text-2xl font-bold text-primary'
-                      : 'scale-100 text-muted-foreground opacity-70'
-                  )}
-                >
-                  {line.text}
-                </p>
-              ))}
-            </div>
+          <div className="relative flex h-80 flex-col items-center justify-center space-y-4 overflow-hidden rounded-md p-4">
+              {currentLineIndex === -1 && !isPlaying ? (
+                <p className="text-center text-2xl font-bold text-muted-foreground">Tekan Play untuk memulai</p>
+              ) : (
+                <>
+                  <p className="text-center text-lg font-medium text-muted-foreground/50 transition-all duration-300">
+                    {previousLine?.text}
+                  </p>
+                  <p className="text-center text-2xl font-bold text-primary transition-all duration-300">
+                    {currentLine?.text}
+                  </p>
+                  <p className="text-center text-lg font-medium text-muted-foreground/50 transition-all duration-300">
+                    {nextLine?.text}
+                  </p>
+                </>
+              )}
           </div>
           <audio ref={audioRef} src="https://storage.googleapis.com/studiopublic/TanteCulikAkuDong.mp3" preload="metadata" className="hidden" />
         </CardContent>

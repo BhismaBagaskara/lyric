@@ -98,6 +98,8 @@ export default function LyricSyncPage() {
     return null; // Render nothing on the server to avoid hydration mismatch
   }
 
+  const visibleLyrics = lyricsData.filter((_, index) => index <= currentLineIndex);
+
   return (
     <main className="flex min-h-screen w-full flex-col items-center justify-center bg-background p-4 sm:p-6 md:p-8">
       <Card className="w-full max-w-2xl overflow-hidden border-primary/20 bg-card/80 shadow-2xl shadow-primary/10 backdrop-blur-sm">
@@ -106,12 +108,11 @@ export default function LyricSyncPage() {
           <p className="text-accent">Synchronized lyric player</p>
         </CardHeader>
         <CardContent>
-          <div className="relative h-80 space-y-2 overflow-hidden rounded-md p-4">
+          <div className="relative h-80 space-y-2 overflow-auto rounded-md p-4">
             <div
-              className="absolute top-0 left-0 flex w-full flex-col items-center gap-6 transition-transform duration-500 ease-in-out"
-              style={{ transform: `translateY(calc(50% - ${currentLineIndex * 3.5}rem))` }}
+              className="flex w-full flex-col items-center gap-6"
             >
-              {lyricsData.map((line, index) => (
+              {visibleLyrics.map((line, index) => (
                 <p
                   key={index}
                   className={cn(

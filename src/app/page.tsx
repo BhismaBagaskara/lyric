@@ -8,14 +8,14 @@ import { cn } from '@/lib/utils';
 import { synchronizeLyricsWithAudio } from '@/ai/flows/synchronize-lyrics-with-audio';
 
 const lyricsData = [
-  { startTime: 1.9, endTime: 4.7, text: "temanku semua pada jahat tante" },
-  { startTime: 4.7, endTime: 7.9, text: "aku lagi susah mereka gak ada" },
-  { startTime: 7.9, endTime: 10.4, text: "coba kalau lagi jayaaa" },
-  { startTime: 10.4, endTime: 13.7, text: "aku dipuja-pujanya tante" },
-  { startTime: 14.2, endTime: 17.2, text: "sudah terbiasa terjadi tante" },
-  { startTime: 17.2, endTime: 20.6, text: "teman datang ketika lagi butuh saja" },
-  { startTime: 20.6, endTime: 23.0, text: "coba kalau lagi susaaah" },
-  { startTime: 23.0, endTime: 26.2, text: "mereka semua menghilanggg" },
+  { startTime: 3.8, endTime: 7.8, text: "temanku semua pada jahat tante" },
+  { startTime: 7.8, endTime: 11.4, text: "aku lagi susah mereka gak ada" },
+  { startTime: 11.4, endTime: 15, text: "coba kalau lagi jayaaa" },
+  { startTime: 15, endTime: 19.8, text: "aku dipuja-pujanya tanteee.." },
+  { startTime: 19.8, endTime: 23.6, text: "sudah terbiasa terjadi tante" },
+  { startTime: 23.6, endTime: 27.7, text: "teman datang ketika lagi butuh saja" },
+  { startTime: 27.7, endTime: 31.5, text: "coba kalau lagi susaaah" },
+  { startTime: 31.5, endTime: 36.5, text: "mereka semua menghilanggg........." },
 ];
 
 export default function LyricSyncPage() {
@@ -158,8 +158,8 @@ export default function LyricSyncPage() {
     <main className="flex min-h-screen w-full flex-col items-center justify-center bg-background p-4 sm:p-6 md:p-8">
       <Card className="w-full max-w-2xl overflow-hidden border-primary/20 bg-card/80 shadow-2xl shadow-primary/10 backdrop-blur-sm">
         <CardHeader className="text-center">
-          <h1 className="font-headline text-4xl font-bold text-primary sm:text-5xl">TanteCulikAkuDong!</h1>
-          <p className="text-accent">In Engineer We Trust</p>
+          <h1 className="font-headline text-4xl font-bold text-primary sm:text-5xl">In Engineer We Trust</h1>
+          <p className="text-accent">Join The Trend</p>
         </CardHeader>
         <CardContent>
           <div className="relative flex h-80 flex-col items-center justify-center space-y-2 overflow-hidden rounded-md p-4 text-center">
